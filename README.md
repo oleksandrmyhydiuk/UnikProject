@@ -1,5 +1,6 @@
 # UnikProject
 Project: Financial Assistant
+
  The Financial Assistant is a desktop application built with Python for managing personal budgets. It allows you to track income and expenses, analyze your financial flows with reports and charts, and convert currencies in real-time.
 The application is developed using the Tkinter library for the graphical user interface and Matplotlib for data visualization. The project follows Object-Oriented Programming (OOP) principles, including encapsulation, abstraction, inheritance, and polymorphism.
 
