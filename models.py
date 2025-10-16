@@ -13,7 +13,6 @@ class Transaction:
     def display(self) -> str:
         return f"Дата: {self.date}, Сума: {self.amount:.2f} грн, Опис: {self.description}"
 
-
 class CategorizedTransaction(Transaction):
     def __init__(self, amount: float, date: str, description: str, category: str):
         super().__init__(amount, date, description)
