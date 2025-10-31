@@ -14,6 +14,7 @@ from exceptions import InsufficientFundsError
 from database import DatabaseManager
 from api_handler import APIHandler
 from services import FinanceService
+from localization import LocalizationManager  # <-- ІМПОРТ
 
 # Отримуємо логер для цього модуля
 logger = logging.getLogger(__name__)
@@ -22,20 +23,26 @@ logger = logging.getLogger(__name__)
 class ChartSelectionDialog(tk.Toplevel):
     """Окремий клас для діалогового вікна вибору типу діаграми."""
 
-    def __init__(self, parent):
+    def __init__(self, parent, loc: LocalizationManager):  # <-- Приймає LocalizationManager
         super().__init__(parent)
-        self.title("Вибір діаграми")
+        self.loc = loc
+        self.title(self.loc.get("chart_selection"))
         self.geometry("300x120")
         self.resizable(False, False)
         self.transient(parent)
         self.selection = None
-        ttk.Label(self, text="Оберіть тип візуалізації:", font=("Arial", 12)).pack(pady=10)
+
+        ttk.Label(self, text=self.loc.get("choose_visualization"), font=("Arial", 12)).pack(pady=10)
+
         btn_frame = ttk.Frame(self)
         btn_frame.pack(pady=5)
-        pie_btn = ttk.Button(btn_frame, text="Кругова", command=lambda: self._select('кругова'))
+
+        pie_btn = ttk.Button(btn_frame, text=self.loc.get("pie_chart"), command=lambda: self._select('кругова'))
         pie_btn.pack(side="left", padx=10)
-        bar_btn = ttk.Button(btn_frame, text="Стовпчикова", command=lambda: self._select('стовпчикова'))
+
+        bar_btn = ttk.Button(btn_frame, text=self.loc.get("bar_chart"), command=lambda: self._select('стовпчикова'))
         bar_btn.pack(side="left", padx=10)
+
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.grab_set()
         self.wait_window()
@@ -57,7 +64,10 @@ class FinanceAppGUI:
     def __init__(self, root):
         logger.info("Ініціалізація графічного інтерфейсу.")
         self._root = root
-        self._root.title("Фінансовий Асистент (Refactored)")
+
+        # Ініціалізація менеджера локалізації
+        self._loc = LocalizationManager(default_lang='uk')
+
         self._root.geometry("1100x700")
         self._root.minsize(1000, 600)
 
@@ -65,8 +75,6 @@ class FinanceAppGUI:
         self._user = User("DefaultUser")
         self._db_manager = DatabaseManager()
         self._api_handler = APIHandler()
-
-        # Створення сервісного шару
         self._service = FinanceService(self._user, self._db_manager)
 
         self._create_default_account("Основний")
@@ -87,90 +95,141 @@ class FinanceAppGUI:
     def _setup_ui(self):
         """Створює та розміщує всі віджети інтерфейсу."""
         logger.debug("Налаштування UI віджетів...")
+
+        # Реєструємо заголовок вікна
+        self._loc.register_widget(self._root, 'window_title', 'title')
+
+        # Створення меню
+        self._menubar = tk.Menu(self._root)
+        self._root.config(menu=self._menubar)
+
+        # Меню "Налаштування"
+        self._settings_menu = tk.Menu(self._menubar, tearoff=0)
+        # Ключ 'settings' буде використано для оновлення тексту меню
+        self._menubar.add_cascade(label=self._loc.get("settings"), menu=self._settings_menu)
+        self._loc.register_widget(self._menubar, 'settings', 'text')  # Реєструємо для оновлення
+
+        # Підменю "Мова"
+        self._lang_menu = tk.Menu(self._settings_menu, tearoff=0)
+        self._settings_menu.add_cascade(label=self._loc.get("language"), menu=self._lang_menu)
+        self._lang_menu.add_command(label="Українська", command=lambda: self._loc.set_language('uk'))
+        self._lang_menu.add_command(label="English", command=lambda: self._loc.set_language('en'))
+        # Реєструємо підменю мови
+        self._loc.register_widget(self._settings_menu, 'language', 'text')
+
         top_frame = ttk.Frame(self._root)
         top_frame.pack(fill="x", padx=10, pady=10)
 
-        input_frame = ttk.LabelFrame(top_frame, text="Додати транзакцію")
+        input_frame = ttk.LabelFrame(top_frame)
         input_frame.pack(side="left", fill="x", expand=True)
+        self._loc.register_widget(input_frame, 'add_transaction', 'labelframe')
 
-        ttk.Label(input_frame, text="Сума:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        label_amount = ttk.Label(input_frame)
+        label_amount.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self._loc.register_widget(label_amount, 'amount')
+
         self._amount_entry = ttk.Entry(input_frame, width=15)
         self._amount_entry.grid(row=0, column=1, padx=5, pady=5)
 
-        ttk.Label(input_frame, text="Опис:").grid(row=0, column=2, padx=5, pady=5, sticky="w")
+        label_desc = ttk.Label(input_frame)
+        label_desc.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+        self._loc.register_widget(label_desc, 'description')
+
         self._desc_entry = ttk.Entry(input_frame, width=30)
         self._desc_entry.grid(row=0, column=3, padx=5, pady=5)
 
-        ttk.Label(input_frame, text="Категорія:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        label_cat = ttk.Label(input_frame)
+        label_cat.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self._loc.register_widget(label_cat, 'category')
+
         self._category_combobox = ttk.Combobox(input_frame,
                                                values=["Продукти", "Транспорт", "Комунальні", "Розваги", "Здоров'я",
                                                        "Одяг", "Дохід"])
         self._category_combobox.grid(row=1, column=1, padx=5, pady=5)
         self._category_combobox.set("Продукти")
 
-        add_income_btn = ttk.Button(input_frame, text="✔️ Додати дохід", command=self.add_income)
+        add_income_btn = ttk.Button(input_frame, command=self.add_income)
         add_income_btn.grid(row=0, column=4, padx=10, pady=5, sticky="ew")
+        self._loc.register_widget(add_income_btn, 'add_income')
 
-        add_expense_btn = ttk.Button(input_frame, text="❌ Додати витрату", command=self.add_expense)
+        add_expense_btn = ttk.Button(input_frame, command=self.add_expense)
         add_expense_btn.grid(row=1, column=4, padx=10, pady=5, sticky="ew")
+        self._loc.register_widget(add_expense_btn, 'add_expense')
 
-        converter_frame = ttk.LabelFrame(top_frame, text="💱 Конвертер валют")
+        converter_frame = ttk.LabelFrame(top_frame)
         converter_frame.pack(side="left", padx=20, pady=0)
+        self._loc.register_widget(converter_frame, 'currency_converter', 'labelframe')
 
-        ttk.Label(converter_frame, text="Сума:").grid(row=0, column=0, padx=5, pady=2)
+        label_conv_amount = ttk.Label(converter_frame)
+        label_conv_amount.grid(row=0, column=0, padx=5, pady=2)
+        self._loc.register_widget(label_conv_amount, 'amount')
+
         self._converter_amount = ttk.Entry(converter_frame, width=10)
         self._converter_amount.grid(row=0, column=1, padx=5, pady=2)
 
-        ttk.Label(converter_frame, text="З:").grid(row=1, column=0, padx=5, pady=2)
+        label_from = ttk.Label(converter_frame)
+        label_from.grid(row=1, column=0, padx=5, pady=2)
+        self._loc.register_widget(label_from, 'from')
+
         self._from_currency = ttk.Combobox(converter_frame, values=["UAH", "USD", "EUR"], width=7)
         self._from_currency.grid(row=1, column=1);
         self._from_currency.set("USD")
 
-        ttk.Label(converter_frame, text="В:").grid(row=2, column=0, padx=5, pady=2)
+        label_to = ttk.Label(converter_frame)
+        label_to.grid(row=2, column=0, padx=5, pady=2)
+        self._loc.register_widget(label_to, 'to')
+
         self._to_currency = ttk.Combobox(converter_frame, values=["UAH", "USD", "EUR"], width=7)
         self._to_currency.grid(row=2, column=1);
         self._to_currency.set("UAH")
 
-        convert_btn = ttk.Button(converter_frame, text="Конвертувати", command=self._perform_conversion)
+        convert_btn = ttk.Button(converter_frame, command=self._perform_conversion)
         convert_btn.grid(row=0, column=2, rowspan=2, padx=10, pady=5)
+        self._loc.register_widget(convert_btn, 'convert')
 
-        self._converter_result = ttk.Label(converter_frame, text="Результат: 0.00", font=("Arial", 10, "bold"))
+        self._converter_result = ttk.Label(converter_frame, font=("Arial", 10, "bold"))
         self._converter_result.grid(row=3, column=0, columnspan=3, pady=5)
+        self._loc.register_widget(self._converter_result, 'result')
 
-        actions_frame = ttk.LabelFrame(self._root, text="Панель інструментів")
+        actions_frame = ttk.LabelFrame(self._root)
         actions_frame.pack(fill="x", padx=10, pady=5)
+        self._loc.register_widget(actions_frame, 'toolbox', 'labelframe')
 
-        spending_report_btn = ttk.Button(actions_frame, text="📊 Звіт про витрати",
-                                         command=lambda: self._generate_report(SpendingReport))
+        spending_report_btn = ttk.Button(actions_frame, command=lambda: self._generate_report(SpendingReport))
         spending_report_btn.pack(side="left", padx=5, pady=5)
+        self._loc.register_widget(spending_report_btn, 'spending_report')
 
-        income_report_btn = ttk.Button(actions_frame, text="📈 Звіт про доходи",
-                                       command=lambda: self._generate_report(IncomeReport))
+        income_report_btn = ttk.Button(actions_frame, command=lambda: self._generate_report(IncomeReport))
         income_report_btn.pack(side="left", padx=5, pady=5)
+        self._loc.register_widget(income_report_btn, 'income_report')
 
-        chart_btn = ttk.Button(actions_frame, text="🎨 Візуалізація", command=self._show_expense_chart)
+        chart_btn = ttk.Button(actions_frame, command=self._show_expense_chart)
         chart_btn.pack(side="left", padx=5, pady=5)
+        self._loc.register_widget(chart_btn, 'visualization')
 
-        budget_btn = ttk.Button(actions_frame, text="💰 Керування бюджетом", command=self.manage_budget)
+        budget_btn = ttk.Button(actions_frame, command=self.manage_budget)
         budget_btn.pack(side="left", padx=5, pady=5)
+        self._loc.register_widget(budget_btn, 'manage_budget')
 
-        transactions_frame = ttk.LabelFrame(self._root, text="Історія транзакцій")
+        transactions_frame = ttk.LabelFrame(self._root)
         transactions_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        self._loc.register_widget(transactions_frame, 'transaction_history', 'labelframe')
 
         self._tree = ttk.Treeview(transactions_frame, columns=("Дата", "Сума", "Категорія", "Опис"), show="headings")
-        self._tree.heading("Дата", text="Дата");
-        self._tree.column("Дата", width=100)
-        self._tree.heading("Сума", text="Сума (грн)");
-        self._tree.column("Сума", width=120, anchor="e")
-        self._tree.heading("Категорія", text="Категорія");
-        self._tree.column("Категорія", width=150)
-        self._tree.heading("Опис", text="Опис")
         self._tree.pack(fill="both", expand=True)
+        # Реєструємо заголовки таблиці
+        self._loc.register_widget(self._tree, 'date', 'heading', column='Дата')
+        self._loc.register_widget(self._tree, 'sum_uah', 'heading', column='Сума')
+        self._loc.register_widget(self._tree, 'category', 'heading', column='Категорія')
+        self._loc.register_widget(self._tree, 'description', 'heading', column='Опис')
 
         info_frame = ttk.Frame(self._root)
         info_frame.pack(fill="x", padx=10, pady=5)
-        self._balance_label = ttk.Label(info_frame, text="Баланс: 0.00 грн", font=("Arial", 14, "bold"))
+
+        self._balance_label = ttk.Label(info_frame, font=("Arial", 14, "bold"))
         self._balance_label.pack(side="left")
+        # Баланс буде оновлюватися через refresh_transactions_view
+
         logger.debug("Налаштування UI завершено.")
 
     def _perform_conversion(self):
@@ -182,30 +241,32 @@ class FinanceAppGUI:
             logger.info(f"Запит на конвертацію: {amount} {from_cur} -> {to_cur}")
             result = self._api_handler.convert_currency(amount, from_cur, to_cur)
             if isinstance(result, float):
-                self._converter_result.config(text=f"Результат: {result:.2f} {to_cur}")
+                self._converter_result.config(text=f"{self._loc.get('result')[:-4]} {result:.2f} {to_cur}")
                 logger.info(f"Результат конвертації: {result:.2f} {to_cur}")
             else:
-                self._converter_result.config(text="Помилка API")
+                self._converter_result.config(text=self._loc.get('error_api'))
                 logger.warning(f"Не вдалося отримати результат конвертації. API повернуло: {result}")
         except (ValueError, TypeError) as e:
             logger.warning(f"Помилка вводу суми для конвертації: {e}")
-            self._converter_result.config(text="Помилка вводу")
+            self._converter_result.config(text=self._loc.get('error_input'))
 
     def _generate_report(self, report_type: type[Report]):
         """Обробляє подію генерації звіту з UI."""
         logger.info(f"Користувач запитав звіт: {report_type.__name__}")
         try:
             report_text, file_path = self._service.generate_report(report_type)
-            messagebox.showinfo("Звіт", report_text)
-            messagebox.showinfo("Успіх", f"Звіт також збережено у файл:\n{file_path}")
+            messagebox.showinfo(self._loc.get(report_type.__name__.lower()), report_text)
+            messagebox.showinfo(self._loc.get("report_generated_success"),
+                                self._loc.get("report_generated_message", path=file_path))
         except Exception as e:
             logger.error(f"Не вдалося згенерувати звіт: {e}", exc_info=True)
-            messagebox.showerror("Помилка", f"Не вдалося згенерувати звіт: {e}")
+            messagebox.showerror(self._loc.get("error_unknown"),
+                                 self._loc.get("report_generation_error", error=e))
 
     def _show_expense_chart(self):
         """Показує діаграму витрат після вибору її типу."""
         logger.info("Користувач запитав візуалізацію.")
-        dialog = ChartSelectionDialog(self._root)
+        dialog = ChartSelectionDialog(self._root, self._loc)  # Передаємо локалізатор
         chart_type = dialog.selection
 
         if not chart_type:
@@ -220,7 +281,8 @@ class FinanceAppGUI:
 
         if not spending_data:
             logger.info("Немає даних для візуалізації.")
-            messagebox.showinfo("Візуалізація", "Немає даних про витрати для створення діаграми.")
+            messagebox.showinfo(self._loc.get("visualization"),
+                                self._loc.get("visualization_no_data"))
             return
 
         self._draw_chart(chart_type, spending_data)
@@ -237,13 +299,13 @@ class FinanceAppGUI:
             sizes = data.values()
 
             if chart_type == 'кругова':
-                chart_win.title("Кругова діаграма витрат")
+                chart_win.title(self._loc.get("pie_chart"))
                 ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
                 ax.axis('equal')
             elif chart_type == 'стовпчикова':
-                chart_win.title("Стовпчикова діаграма витрат")
+                chart_win.title(self._loc.get("bar_chart"))
                 ax.bar(labels, sizes, color='skyblue')
-                ax.set_ylabel('Сума (грн)')
+                ax.set_ylabel(self._loc.get("sum_uah"))
                 plt.xticks(rotation=45, ha='right')
                 plt.tight_layout()
 
@@ -253,7 +315,7 @@ class FinanceAppGUI:
             logger.info("Діаграму успішно намальовано.")
         except Exception as e:
             logger.error(f"Помилка при малюванні діаграми: {e}", exc_info=True)
-            messagebox.showerror("Помилка візуалізації", f"Не вдалося намалювати діаграму: {e}")
+            messagebox.showerror(self._loc.get("visualization"), f"Не вдалося намалювати діаграму: {e}")
 
     def add_transaction(self, is_income: bool):
         """Обробляє подію додавання транзакції, делегуючи логіку сервісу."""
@@ -264,7 +326,8 @@ class FinanceAppGUI:
 
             if not description:
                 logger.warning("Користувач намагався додати транзакцію з порожнім описом.")
-                messagebox.showwarning("Попередження", "Поле 'Опис' не може бути порожнім.")
+                messagebox.showwarning(self._loc.get("warning"),
+                                       self._loc.get("warning_empty_description"))
                 return
 
             self._service.add_transaction(amount, description, category, is_income)
@@ -274,18 +337,18 @@ class FinanceAppGUI:
             self._desc_entry.delete(0, tk.END)
 
         except InsufficientFundsError as e:
-            # Логуємо помилку перед тим, як показати її користувачу
             logger.warning(f"Помилка операції: недостатньо коштів. {e}")
-            messagebox.showerror("Помилка операції", e)
+            messagebox.showerror(self._loc.get("error_insufficient_funds"), e)
 
         except ValueError as e:
             logger.warning(f"Помилка вводу даних користувачем: {e}")
-            messagebox.showerror("Помилка вводу", "Сума має бути коректним числом.")
+            messagebox.showerror(self._loc.get("error_value"),
+                                 self._loc.get("error_value_message"))
 
         except Exception as e:
-            # НАЙВАЖЛИВІШЕ: логуємо повний traceback невідомої помилки
             logger.critical("Сталася непередбачувана помилка!", exc_info=True)
-            messagebox.showerror("Критична помилка", "Сталася непередбачувана помилка. Деталі записано в app.log.")
+            messagebox.showerror(self._loc.get("error_unknown"),
+                                 self._loc.get("error_unknown_message", error=e))
 
     def add_expense(self):
         self.add_transaction(is_income=False)
@@ -307,21 +370,23 @@ class FinanceAppGUI:
                 else:
                     self._tree.insert("", "end", values=(t.date, f"{t.amount:.2f}", "", t.description))
 
-            self._balance_label.config(text=f"Баланс: {account.get_balance():.2f} грн")
+            self._balance_label.config(text=self._loc.get("balance", balance=account.get_balance()))
             logger.debug("Список транзакцій та баланс оновлено.")
         except Exception as e:
             logger.error(f"Не вдалося оновити список транзакцій: {e}", exc_info=True)
-            self._balance_label.config(text="Помилка завантаження даних")
+            self._balance_label.config(text=self._loc.get("balance_error"))
 
     def manage_budget(self):
         """Відкриває діалог для керування бюджетом."""
         logger.info("Користувач відкрив менеджер бюджету.")
-        category = simpledialog.askstring("Керування бюджетом", "Введіть категорію (напр., Продукти):")
+        category = simpledialog.askstring(self._loc.get("manage_budget"),
+                                          self._loc.get("budget_category_prompt"))
         if not category:
             logger.info("Користувач скасував введення категорії бюджету.")
             return
 
-        limit = simpledialog.askfloat("Керування бюджетом", f"Встановіть місячний ліміт для '{category}':")
+        limit = simpledialog.askfloat(self._loc.get("manage_budget"),
+                                      self._loc.get("budget_limit_prompt", category=category))
         if limit is None:
             logger.info("Користувач скасував введення ліміту бюджету.")
             return
@@ -334,5 +399,5 @@ class FinanceAppGUI:
         transactions = account.get_transactions_by_period(start_date, end_date)
         spent = budget.get_spent_amount(transactions)
 
-        messagebox.showinfo("Стан бюджету", f"Бюджет для '{category}': {limit:.2f} грн\n"
-                                            f"Витрачено цього місяця: {spent:.2f} грн")
+        messagebox.showinfo(self._loc.get("budget_status_title"),
+                            self._loc.get("budget_status_message", category=category, limit=limit, spent=spent))
