@@ -1,7 +1,9 @@
+# gui.py
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
-import os
 from datetime import datetime
+import os
+import logging
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -13,28 +15,27 @@ from database import DatabaseManager
 from api_handler import APIHandler
 from services import FinanceService
 
+# Отримуємо логер для цього модуля
+logger = logging.getLogger(__name__)
+
+
 class ChartSelectionDialog(tk.Toplevel):
     """Окремий клас для діалогового вікна вибору типу діаграми."""
+
     def __init__(self, parent):
         super().__init__(parent)
         self.title("Вибір діаграми")
         self.geometry("300x120")
         self.resizable(False, False)
         self.transient(parent)
-
         self.selection = None
-
         ttk.Label(self, text="Оберіть тип візуалізації:", font=("Arial", 12)).pack(pady=10)
-
         btn_frame = ttk.Frame(self)
         btn_frame.pack(pady=5)
-
         pie_btn = ttk.Button(btn_frame, text="Кругова", command=lambda: self._select('кругова'))
         pie_btn.pack(side="left", padx=10)
-
         bar_btn = ttk.Button(btn_frame, text="Стовпчикова", command=lambda: self._select('стовпчикова'))
         bar_btn.pack(side="left", padx=10)
-
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.grab_set()
         self.wait_window()
@@ -47,11 +48,14 @@ class ChartSelectionDialog(tk.Toplevel):
         self.selection = None
         self.destroy()
 
+
 class FinanceAppGUI:
     """
     Клас GUI, що відповідає ТІЛЬКИ за відображення та взаємодію з користувачем.
     """
+
     def __init__(self, root):
+        logger.info("Ініціалізація графічного інтерфейсу.")
         self._root = root
         self._root.title("Фінансовий Асистент (Refactored)")
         self._root.geometry("1100x700")
@@ -78,9 +82,11 @@ class FinanceAppGUI:
         account.transactions = transactions
         self._user.add_account(account)
         self.current_account_name = name
+        logger.info(f"Завантажено/створено рахунок за замовчуванням: {name}")
 
     def _setup_ui(self):
         """Створює та розміщує всі віджети інтерфейсу."""
+        logger.debug("Налаштування UI віджетів...")
         top_frame = ttk.Frame(self._root)
         top_frame.pack(fill="x", padx=10, pady=10)
 
@@ -96,7 +102,9 @@ class FinanceAppGUI:
         self._desc_entry.grid(row=0, column=3, padx=5, pady=5)
 
         ttk.Label(input_frame, text="Категорія:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        self._category_combobox = ttk.Combobox(input_frame, values=["Продукти", "Транспорт", "Комунальні", "Розваги", "Здоров'я", "Одяг", "Дохід"])
+        self._category_combobox = ttk.Combobox(input_frame,
+                                               values=["Продукти", "Транспорт", "Комунальні", "Розваги", "Здоров'я",
+                                                       "Одяг", "Дохід"])
         self._category_combobox.grid(row=1, column=1, padx=5, pady=5)
         self._category_combobox.set("Продукти")
 
@@ -115,11 +123,13 @@ class FinanceAppGUI:
 
         ttk.Label(converter_frame, text="З:").grid(row=1, column=0, padx=5, pady=2)
         self._from_currency = ttk.Combobox(converter_frame, values=["UAH", "USD", "EUR"], width=7)
-        self._from_currency.grid(row=1, column=1); self._from_currency.set("USD")
+        self._from_currency.grid(row=1, column=1);
+        self._from_currency.set("USD")
 
         ttk.Label(converter_frame, text="В:").grid(row=2, column=0, padx=5, pady=2)
         self._to_currency = ttk.Combobox(converter_frame, values=["UAH", "USD", "EUR"], width=7)
-        self._to_currency.grid(row=2, column=1); self._to_currency.set("UAH")
+        self._to_currency.grid(row=2, column=1);
+        self._to_currency.set("UAH")
 
         convert_btn = ttk.Button(converter_frame, text="Конвертувати", command=self._perform_conversion)
         convert_btn.grid(row=0, column=2, rowspan=2, padx=10, pady=5)
@@ -130,10 +140,12 @@ class FinanceAppGUI:
         actions_frame = ttk.LabelFrame(self._root, text="Панель інструментів")
         actions_frame.pack(fill="x", padx=10, pady=5)
 
-        spending_report_btn = ttk.Button(actions_frame, text="📊 Звіт про витрати", command=lambda: self._generate_report(SpendingReport))
+        spending_report_btn = ttk.Button(actions_frame, text="📊 Звіт про витрати",
+                                         command=lambda: self._generate_report(SpendingReport))
         spending_report_btn.pack(side="left", padx=5, pady=5)
 
-        income_report_btn = ttk.Button(actions_frame, text="📈 Звіт про доходи", command=lambda: self._generate_report(IncomeReport))
+        income_report_btn = ttk.Button(actions_frame, text="📈 Звіт про доходи",
+                                       command=lambda: self._generate_report(IncomeReport))
         income_report_btn.pack(side="left", padx=5, pady=5)
 
         chart_btn = ttk.Button(actions_frame, text="🎨 Візуалізація", command=self._show_expense_chart)
@@ -146,9 +158,12 @@ class FinanceAppGUI:
         transactions_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         self._tree = ttk.Treeview(transactions_frame, columns=("Дата", "Сума", "Категорія", "Опис"), show="headings")
-        self._tree.heading("Дата", text="Дата"); self._tree.column("Дата", width=100)
-        self._tree.heading("Сума", text="Сума (грн)"); self._tree.column("Сума", width=120, anchor="e")
-        self._tree.heading("Категорія", text="Категорія"); self._tree.column("Категорія", width=150)
+        self._tree.heading("Дата", text="Дата");
+        self._tree.column("Дата", width=100)
+        self._tree.heading("Сума", text="Сума (грн)");
+        self._tree.column("Сума", width=120, anchor="e")
+        self._tree.heading("Категорія", text="Категорія");
+        self._tree.column("Категорія", width=150)
         self._tree.heading("Опис", text="Опис")
         self._tree.pack(fill="both", expand=True)
 
@@ -156,6 +171,7 @@ class FinanceAppGUI:
         info_frame.pack(fill="x", padx=10, pady=5)
         self._balance_label = ttk.Label(info_frame, text="Баланс: 0.00 грн", font=("Arial", 14, "bold"))
         self._balance_label.pack(side="left")
+        logger.debug("Налаштування UI завершено.")
 
     def _perform_conversion(self):
         """Виконує конвертацію валют."""
@@ -163,38 +179,47 @@ class FinanceAppGUI:
             amount = float(self._converter_amount.get())
             from_cur = self._from_currency.get()
             to_cur = self._to_currency.get()
+            logger.info(f"Запит на конвертацію: {amount} {from_cur} -> {to_cur}")
             result = self._api_handler.convert_currency(amount, from_cur, to_cur)
             if isinstance(result, float):
                 self._converter_result.config(text=f"Результат: {result:.2f} {to_cur}")
+                logger.info(f"Результат конвертації: {result:.2f} {to_cur}")
             else:
                 self._converter_result.config(text="Помилка API")
-        except (ValueError, TypeError):
+                logger.warning(f"Не вдалося отримати результат конвертації. API повернуло: {result}")
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Помилка вводу суми для конвертації: {e}")
             self._converter_result.config(text="Помилка вводу")
 
     def _generate_report(self, report_type: type[Report]):
         """Обробляє подію генерації звіту з UI."""
+        logger.info(f"Користувач запитав звіт: {report_type.__name__}")
         try:
             report_text, file_path = self._service.generate_report(report_type)
             messagebox.showinfo("Звіт", report_text)
             messagebox.showinfo("Успіх", f"Звіт також збережено у файл:\n{file_path}")
         except Exception as e:
+            logger.error(f"Не вдалося згенерувати звіт: {e}", exc_info=True)
             messagebox.showerror("Помилка", f"Не вдалося згенерувати звіт: {e}")
 
     def _show_expense_chart(self):
         """Показує діаграму витрат після вибору її типу."""
+        logger.info("Користувач запитав візуалізацію.")
         dialog = ChartSelectionDialog(self._root)
         chart_type = dialog.selection
 
         if not chart_type:
+            logger.info("Користувач скасував вибір діаграми.")
             return
 
+        logger.info(f"Користувач обрав тип діаграми: {chart_type}")
         account = self._service.get_current_account()
         start_date = datetime.now().replace(day=1).strftime('%Y-%m-%d')
         end_date = datetime.now().strftime('%Y-%m-%d')
-        # Створюємо екземпляр звіту тут, оскільки сервіс повертає лише текст
         spending_data = SpendingReport(account).generate(start_date, end_date)
 
         if not spending_data:
+            logger.info("Немає даних для візуалізації.")
             messagebox.showinfo("Візуалізація", "Немає даних про витрати для створення діаграми.")
             return
 
@@ -202,27 +227,33 @@ class FinanceAppGUI:
 
     def _draw_chart(self, chart_type: str, data: dict):
         """Малює діаграму обраного типу."""
-        chart_win = tk.Toplevel(self._root)
-        chart_win.geometry("800x600")
+        logger.debug(f"Малювання діаграми типу: {chart_type}")
+        try:
+            chart_win = tk.Toplevel(self._root)
+            chart_win.geometry("800x600")
 
-        fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
-        labels = data.keys()
-        sizes = data.values()
+            fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
+            labels = data.keys()
+            sizes = data.values()
 
-        if chart_type == 'кругова':
-            chart_win.title("Кругова діаграма витрат")
-            ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
-            ax.axis('equal')
-        elif chart_type == 'стовпчикова':
-            chart_win.title("Стовпчикова діаграма витрат")
-            ax.bar(labels, sizes, color='skyblue')
-            ax.set_ylabel('Сума (грн)')
-            plt.xticks(rotation=45, ha='right')
-            plt.tight_layout()
+            if chart_type == 'кругова':
+                chart_win.title("Кругова діаграма витрат")
+                ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+                ax.axis('equal')
+            elif chart_type == 'стовпчикова':
+                chart_win.title("Стовпчикова діаграма витрат")
+                ax.bar(labels, sizes, color='skyblue')
+                ax.set_ylabel('Сума (грн)')
+                plt.xticks(rotation=45, ha='right')
+                plt.tight_layout()
 
-        canvas = FigureCanvasTkAgg(fig, master=chart_win)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+            canvas = FigureCanvasTkAgg(fig, master=chart_win)
+            canvas.draw()
+            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+            logger.info("Діаграму успішно намальовано.")
+        except Exception as e:
+            logger.error(f"Помилка при малюванні діаграми: {e}", exc_info=True)
+            messagebox.showerror("Помилка візуалізації", f"Не вдалося намалювати діаграму: {e}")
 
     def add_transaction(self, is_income: bool):
         """Обробляє подію додавання транзакції, делегуючи логіку сервісу."""
@@ -232,6 +263,7 @@ class FinanceAppGUI:
             category = self._category_combobox.get()
 
             if not description:
+                logger.warning("Користувач намагався додати транзакцію з порожнім описом.")
                 messagebox.showwarning("Попередження", "Поле 'Опис' не може бути порожнім.")
                 return
 
@@ -240,12 +272,20 @@ class FinanceAppGUI:
             self.refresh_transactions_view()
             self._amount_entry.delete(0, tk.END)
             self._desc_entry.delete(0, tk.END)
+
         except InsufficientFundsError as e:
+            # Логуємо помилку перед тим, як показати її користувачу
+            logger.warning(f"Помилка операції: недостатньо коштів. {e}")
             messagebox.showerror("Помилка операції", e)
-        except ValueError:
+
+        except ValueError as e:
+            logger.warning(f"Помилка вводу даних користувачем: {e}")
             messagebox.showerror("Помилка вводу", "Сума має бути коректним числом.")
+
         except Exception as e:
-            messagebox.showerror("Невідома помилка", f"Сталася невідома помилка: {e}")
+            # НАЙВАЖЛИВІШЕ: логуємо повний traceback невідомої помилки
+            logger.critical("Сталася непередбачувана помилка!", exc_info=True)
+            messagebox.showerror("Критична помилка", "Сталася непередбачувана помилка. Деталі записано в app.log.")
 
     def add_expense(self):
         self.add_transaction(is_income=False)
@@ -255,28 +295,38 @@ class FinanceAppGUI:
 
     def refresh_transactions_view(self):
         """Оновлює таблицю транзакцій та баланс на екрані."""
+        logger.debug("Оновлення списку транзакцій та балансу...")
         for i in self._tree.get_children():
             self._tree.delete(i)
 
-        account = self._service.get_current_account()
-        for t in reversed(account.transactions):
-            if isinstance(t, CategorizedTransaction):
-                self._tree.insert("", "end", values=(t.date, f"{t.amount:.2f}", t.category, t.description))
-            else:
-                self._tree.insert("", "end", values=(t.date, f"{t.amount:.2f}", "", t.description))
+        try:
+            account = self._service.get_current_account()
+            for t in reversed(account.transactions):
+                if isinstance(t, CategorizedTransaction):
+                    self._tree.insert("", "end", values=(t.date, f"{t.amount:.2f}", t.category, t.description))
+                else:
+                    self._tree.insert("", "end", values=(t.date, f"{t.amount:.2f}", "", t.description))
 
-        self._balance_label.config(text=f"Баланс: {account.get_balance():.2f} грн")
+            self._balance_label.config(text=f"Баланс: {account.get_balance():.2f} грн")
+            logger.debug("Список транзакцій та баланс оновлено.")
+        except Exception as e:
+            logger.error(f"Не вдалося оновити список транзакцій: {e}", exc_info=True)
+            self._balance_label.config(text="Помилка завантаження даних")
 
     def manage_budget(self):
         """Відкриває діалог для керування бюджетом."""
+        logger.info("Користувач відкрив менеджер бюджету.")
         category = simpledialog.askstring("Керування бюджетом", "Введіть категорію (напр., Продукти):")
         if not category:
+            logger.info("Користувач скасував введення категорії бюджету.")
             return
 
         limit = simpledialog.askfloat("Керування бюджетом", f"Встановіть місячний ліміт для '{category}':")
         if limit is None:
+            logger.info("Користувач скасував введення ліміту бюджету.")
             return
 
+        logger.info(f"Користувач встановив бюджет: Категорія={category}, Ліміт={limit}")
         budget = Budget(category, limit)
         account = self._service.get_current_account()
         start_date = datetime.now().replace(day=1).strftime('%Y-%m-%d')
@@ -285,4 +335,4 @@ class FinanceAppGUI:
         spent = budget.get_spent_amount(transactions)
 
         messagebox.showinfo("Стан бюджету", f"Бюджет для '{category}': {limit:.2f} грн\n"
-                                           f"Витрачено цього місяця: {spent:.2f} грн")
+                                            f"Витрачено цього місяця: {spent:.2f} грн")
