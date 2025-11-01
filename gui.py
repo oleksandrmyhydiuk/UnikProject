@@ -866,9 +866,15 @@ class FinanceAppGUI(QMainWindow):
         goal_id = int(selected_item.text(0))
         goal_name = selected_item.text(1)
 
+        current_balance = self._service.get_current_account().get_balance()
+        prompt_title = self._loc.get("goal_contribution_prompt_title")
+        base_prompt_text = self._loc.get("goal_contribution_prompt_text", name=goal_name)
+        balance_text = self._loc.get("current_balance_label")
+        full_prompt_text = f"{base_prompt_text}\n\n{balance_text}: {current_balance:.2f} грн"
+
         amount, ok = QInputDialog.getDouble(self,
-                                            self._loc.get("goal_contribution_prompt_title"),
-                                            self._loc.get("goal_contribution_prompt_text", name=goal_name),
+                                            prompt_title,
+                                            full_prompt_text,
                                             decimals=2
                                             )
 

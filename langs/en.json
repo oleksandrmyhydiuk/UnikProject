@@ -97,5 +97,7 @@
   "budget_category_prompt": "Enter a category (e.g., Groceries):",
   "budget_limit_prompt": "Set monthly limit for '{category}':",
   "budget_status_title": "Budget Status",
-  "budget_status_message": "Budget for '{category}': {limit:.2f} UAH\nSpent this month: {spent:.2f} UAH"
+  "budget_status_message": "Budget for '{category}': {limit:.2f} UAH\nSpent this month: {spent:.2f} UAH",
+
+  "current_balance_label": "Your Current Balance"
 }

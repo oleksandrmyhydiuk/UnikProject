@@ -97,5 +97,7 @@
   "budget_category_prompt": "Введіть категорію (напр., Продукти):",
   "budget_limit_prompt": "Встановіть місячний ліміт для '{category}':",
   "budget_status_title": "Стан бюджету",
-  "budget_status_message": "Бюджет для '{category}': {limit:.2f} грн\nВитрачено цього місяця: {spent:.2f} грн"
+  "budget_status_message": "Бюджет для '{category}': {limit:.2f} грн\nВитрачено цього місяця: {spent:.2f} грн",
+
+  "current_balance_label": "Ваш поточний баланс"
 }
