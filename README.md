@@ -132,9 +132,9 @@ The project was developed in accordance with specific academic requirements for 
 
   * **At least 2 inheritance hierarchies (one 3+):** **Met.**
 
-    1.  **Depth 3:** `Transaction` → `CategorizedTransaction` → `RecurringTransaction`.
-    2.  **Depth 2:** `Account` → `SavingsAccount`.
-    3.  **Depth 2 (Abstraction):** `Report` (ABC) → `SpendingReport` / `IncomeReport`.
+    1  **Depth 3:** `Transaction` → `CategorizedTransaction` → `RecurringTransaction`.
+    2  **Depth 2:** `Account` → `SavingsAccount`.
+    3  **Depth 2 (Abstraction):** `Report` (ABC) → `SpendingReport` / `IncomeReport`.
 
   * **Abstraction / Interfaces:** **Met.**
     The `Report` class is an **Abstract Base Class (ABC)** with an `@abstractmethod` `generate()`, forcing descendant classes `SpendingReport` and `IncomeReport` to implement this method.
