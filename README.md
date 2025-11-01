@@ -95,16 +95,16 @@ The project was developed in accordance with specific academic requirements for 
 
   * **At least 4 windows/forms:** **Met (9+).**
 
-    1.  `QMainWindow` (Main window)
-    2.  "Dashboard" Tab
-    3.  "Debts" Tab
-    4.  "Goals" Tab
-    5.  "Analysis" Tab
-    6.  `ChartSelectionDialog` (Visualization selection dialog)
-    7.  `ChartDialog` (Chart display dialog)
-    8.  `QInputDialog` (for budget)
-    9.  `QInputDialog` (for goal contribution)
-    10. Numerous `QMessageBox` (errors, warnings).
+    1  `QMainWindow` (Main window)
+    2  "Dashboard" Tab
+    3  "Debts" Tab
+    4  "Goals" Tab
+    5  "Analysis" Tab
+    6  `ChartSelectionDialog` (Visualization selection dialog)
+    7  `ChartDialog` (Chart display dialog)
+    8  `QInputDialog` (for budget)
+    9  `QInputDialog` (for goal contribution)
+    10 Numerous `QMessageBox` (errors, warnings).
 
   * **At least 20 controls:** **Met (60+).**
     Uses `QTabWidget`, `QGroupBox`, `QPushButton`, `QLabel`, `QLineEdit`, `QComboBox`, `QDateEdit`, `QTreeWidget`, `QProgressBar`, `QAction`, `QMenuBar`, `QMenu`, etc.
