@@ -1,4 +1,3 @@
-# api_handler.py
 import requests
 import os
 from dotenv import load_dotenv
@@ -6,9 +5,7 @@ import logging
 
 load_dotenv()
 
-# Отримуємо логер для цього модуля
 logger = logging.getLogger(__name__)
-
 
 class APIHandler:
     """Клас для взаємодії з API курсів валют."""

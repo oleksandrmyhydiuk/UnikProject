@@ -1,4 +1,3 @@
-# tests/test_models.py
 import unittest
 from models import Account, Transaction
 from exceptions import InsufficientFundsError

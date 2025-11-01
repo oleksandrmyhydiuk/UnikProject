@@ -1,29 +1,33 @@
-# main.py
-import tkinter as tk
+import sys
 import logging
+from PyQt5.QtWidgets import QApplication
 from gui import FinanceAppGUI
 
 
 def setup_logging():
     """Налаштовує базову конфігурацію логування."""
     logging.basicConfig(
-        level=logging.INFO,  # Мінімальний рівень логування (INFO, DEBUG, WARNING, ERROR)
+        level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        filename='app.log',  # Назва файлу для логів
-        filemode='w'  # 'w' - перезаписувати файл при кожному запуску, 'a' - дозаписувати
+        filename='app.log',
+        filemode='w'
     )
 
 
 def main():
     """Основна функція для запуску програми."""
     setup_logging()
-    logging.info("Запуск програми 'Фінансовий Асистент'")
+    logging.info("Запуск програми 'Фінансовий Асистент' на PyQt5")
 
-    root = tk.Tk()
-    app = FinanceAppGUI(root)
-    root.mainloop()
+    # Створення QApplication є обов'язковим для будь-якої PyQt5 програми
+    app = QApplication(sys.argv)
 
-    logging.info("Програму закрито коректно.")
+    # Створюємо та показуємо головне вікно
+    window = FinanceAppGUI(app)  # Передаємо 'app' для керування темами
+    window.show()
+
+    # Запускаємо головний цикл програми
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
