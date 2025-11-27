@@ -15,6 +15,19 @@ The interface is built using **PyQt5** and `qtawesome` for icons, ensuring a mod
   * **Visualization:** Build pie and bar charts to analyze spending.
   * **Settings:** Dynamically switch the language (i18n) and theme (Light/Dark mode) without restarting the application.
 
+## 🛡️ Security & Biometric Updates
+
+* **🔐 Authentication:**
+    * Password registration and login protected by **Argon2** hashing.
+    * **Biometric Login:** Integration with **Windows Hello** (FaceID, Fingerprint, PIN) for quick, password-less access.
+* **🛡️ Security Technologies:**
+    * **winsdk:** Used to interface with Windows API for Windows Hello biometric prompts.
+    * **argon2-cffi:** Implements state-of-the-art password hashing.
+    * **keyring:** Securely stores access tokens in the system's Credential Manager to prevent theft.
+    * **asyncio:** Handles asynchronous Windows API calls to ensure a responsive UI during authentication.
+* **🧵 Multithreading:**
+    * Implemented `QThread` (`BiometricThread`) to run biometric checks in the background, preventing the UI from freezing while waiting for user input.
+
 ## 🛠️ Technologies Used
 
   * **Language:** Python 3
@@ -23,7 +36,12 @@ The interface is built using **PyQt5** and `qtawesome` for icons, ensuring a mod
   * **Visualization:** Matplotlib (integrated with PyQt5)
   * **Database:** SQLite3 (via the built-in `sqlite3` module)
   * **API Requests:** `requests`
-  * **Security (API Key):** `python-dotenv`
+  * **Security & Authentication:**
+      * `argon2-cffi` (State-of-the-art password hashing)
+      * `keyring` (Secure access to System Credential Manager)
+      * `python-dotenv` (Environment variable management)
+  * **Biometrics:** `winsdk` (Windows Hello API integration for FaceID/Fingerprint)
+  * **Concurrency:** `asyncio` & `QThread` (Asynchronous operations for responsive UI)
   * **Testing:** `pytest` (including `unittest` compatibility)
   * **Benchmarking:** `pytest-benchmark`
   * **Logging:** `logging`
