@@ -99,5 +99,19 @@
   "budget_status_title": "Стан бюджету",
   "budget_status_message": "Бюджет для '{category}': {limit:.2f} грн\nВитрачено цього місяця: {spent:.2f} грн",
 
-  "current_balance_label": "Ваш поточний баланс"
+  "current_balance_label": "Ваш поточний баланс",
+
+  "auth_login_title": "Вхід у систему",
+  "auth_register_title": "Створення паролю",
+  "auth_password_label": "Введіть пароль:",
+  "auth_confirm_label": "Підтвердіть пароль:",
+  "auth_login_button": "Увійти",
+  "auth_register_button": "Зберегти пароль",
+  "auth_biometric_button": "Увійти через систему / FaceID",
+  "auth_error_mismatch": "Паролі не співпадають!",
+  "auth_error_incorrect": "Невірний пароль!",
+  "auth_error_empty": "Пароль не може бути порожнім!",
+  "auth_success_register": "Пароль успішно створено!",
+  "auth_biometric_success": "Авторизація успішна!",
+  "auth_biometric_failed": "Не вдалося авторизуватися через систему."
 }
