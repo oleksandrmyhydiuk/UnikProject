@@ -1,0 +1,31 @@
+@startuml
+start
+:main.py запущено;
+
+partition "Етап Авторизації (Sequence)" {
+  if (Користувач зареєстрований?) then (Ні)
+    :RegistrationDialog;
+  else (Так)
+  endif
+  
+  :LoginDialog;
+  if (Вхід успішний?) then (Ні)
+    stop
+  else (Так)
+  endif
+}
+
+partition "Головний цикл додатку" {
+  :Ініціалізація FinanceAppGUI;
+  :Завантаження БД (DatabaseManager);
+  
+  fork
+    :Очікування дій користувача (Event Loop);
+  fork again
+    :Запит курсів валют (Фон);
+  end merge
+}
+
+:Закриття вікна (sys.exit);
+stop
+@enduml
