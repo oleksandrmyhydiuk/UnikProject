@@ -1,0 +1,25 @@
+@startuml
+component "FinanceAppGUI (QMainWindow)" as Main {
+  port "User Input" as UI
+  
+  component "Central Widget" as Central {
+    component "Main Layout (QVBoxLayout)" as VBox {
+      
+      component "Navigation (QTabWidget)" as Tabs {
+        port "currentChanged" as tabSignal
+        component "DashboardTab" as Tab1
+        component "GoalsTab" as Tab3
+      }
+      
+      component "Content Area (QStackedWidget)" as Content {
+        component "TransactionForm (QGroupBox)" as Form
+        component "HistoryTable (QTreeWidget)" as Tree
+      }
+    }
+  }
+  
+  UI --> Tabs : "Клік"
+  Tabs.tabSignal --> Content : "Зміна екрану"
+  Form --> Tree : "Оновлення даних"
+}
+@enduml

@@ -1,0 +1,47 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Користувач" as User
+actor "ExchangeRate API" as API
+actor "Windows OS (Keyring/Hello)" as OS
+
+rectangle "Система 'Фінансовий Асистент'" {
+  usecase "Вхід у систему" as UC_Login
+  usecase "Вхід за паролем" as UC_PassLogin
+  usecase "Біометричний вхід" as UC_BioLogin
+  
+  usecase "Управління транзакціями" as UC_Trans
+  usecase "Додати витрату" as UC_AddExp
+  usecase "Додати дохід" as UC_AddInc
+  usecase "Перевірка достатності коштів" as UC_CheckFunds
+  
+  usecase "Управління цілями" as UC_Goals
+  usecase "Поповнення цілі" as UC_FundGoal
+  
+  usecase "Конвертація валют" as UC_Convert
+  usecase "Налаштування (Тема/Мова)" as UC_Settings
+  usecase "Генерація звітів" as UC_Reports
+}
+
+User --> UC_Login
+UC_Login <|-- UC_PassLogin
+UC_Login <|-- UC_BioLogin
+
+UC_BioLogin .> OS : <<uses>>
+
+User --> UC_Trans
+UC_Trans <|-- UC_AddExp
+UC_Trans <|-- UC_AddInc
+UC_AddExp ..> UC_CheckFunds : <<include>>
+UC_FundGoal ..> UC_CheckFunds : <<include>>
+
+User --> UC_Goals
+UC_Goals <|-- UC_FundGoal
+
+User --> UC_Convert
+UC_Convert ..> API : <<uses>>
+
+User --> UC_Settings
+User --> UC_Reports
+@enduml

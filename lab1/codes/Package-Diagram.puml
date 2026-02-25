@@ -1,0 +1,36 @@
+@startuml
+package "GUI Layer" as GUI {
+  component "gui.py" as file_gui
+  component "login_gui.py" as file_login
+}
+
+package "Service Layer" as Service {
+  component "services.py" as file_srv
+  component "auth.py" as file_auth
+  component "api_handler.py" as file_api
+}
+
+package "Domain Model" as Domain {
+  component "models.py" as file_mod
+}
+
+package "Infrastructure" as Infra {
+  component "database.py" as file_db
+  component "localization.py" as file_loc
+}
+
+package "External Libraries" as ExtLibs {
+  component "PyQt5" as lib_pyqt
+  component "argon2-cffi" as lib_argon
+}
+
+' Зв'язки між пакетами (архітектура)
+GUI ..> Service : imports
+Service ..> Domain : uses
+Service ..> Infra : calls
+Infra ..> Domain : maps to
+
+' Зв'язки із зовнішніми бібліотеками
+GUI ..> lib_pyqt
+Service ..> lib_argon
+@enduml

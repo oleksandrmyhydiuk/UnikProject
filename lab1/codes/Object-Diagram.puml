@@ -1,0 +1,29 @@
+@startuml
+skinparam objectBackgroundColor #F9F9FB
+
+object "currentUser: User" as user {
+  username = "admin"
+  is_authenticated = True
+}
+
+object "mainAccount: Account" as acc {
+  name = "Основний Гаманець"
+  _balance = 45000.00
+}
+
+object "expense_1: CategorizedTransaction" as t1 {
+  amount = 1200.00
+  category = "Продукти"
+  is_income = False
+}
+
+object "income_1: Transaction" as t2 {
+  amount = 50000.00
+  description = "Зарплата"
+  is_income = True
+}
+
+user *-- acc : "володіє"
+acc *-- t1 : "містить"
+acc *-- t2 : "містить"
+@enduml

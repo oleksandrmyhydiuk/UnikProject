@@ -1,0 +1,38 @@
+@startuml
+|Користувач|
+start
+:Вводить суму та категорію;
+:Натискає "Додати витрату";
+
+|GUI (PyQt5)|
+:Зчитування даних з полів;
+if (Дані валідні?) then (Ні)
+  :Показати попередження;
+  stop
+else (Так)
+  :Виклик FinanceService.add_transaction();
+
+|Business Logic (Service)|
+  :Створення CategorizedTransaction;
+  if (Account.balance >= Сума?) then (Ні)
+    :Генерація InsufficientFundsError;
+|GUI (PyQt5)|
+    :Показати помилку "Недостатньо коштів";
+    stop
+  else (Так)
+|Business Logic (Service)|
+    :Account.balance -= Сума;
+|Database (SQLite)|
+    :INSERT INTO transactions;
+    :UPDATE accounts;
+|Business Logic (Service)|
+    :Повернення успішного статусу;
+|GUI (PyQt5)|
+    :Очистити поля вводу;
+    :Оновлення таблиці QTreeWidget;
+|Користувач|
+    :Бачить оновлений баланс;
+    stop
+  endif
+endif
+@enduml

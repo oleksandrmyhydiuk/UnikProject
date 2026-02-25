@@ -1,0 +1,20 @@
+@startuml
+node "ПК Користувача (Windows/macOS)" {
+  node "Python Virtual Environment" {
+    artifact "main.py / gui.py" as App
+    artifact "argon2-cffi" as Crypto
+    artifact "winsdk" as WinAPI
+  }
+  database "finance_assistant.db" as SQLite
+  node "OS Credential Manager" as Keyring
+}
+
+cloud "Internet" {
+  node "ExchangeRate-API Server" as RemoteAPI
+}
+
+App --> SQLite : Читання/Запис
+App --> RemoteAPI : HTTP/REST
+App --> Keyring : Токен авторизації
+App --> Crypto : Хешування
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+robust "GUI (Головний потік)" as GUI
+robust "APIHandler" as API
+concise "Network (Internet)" as Net
+
+@0
+GUI is Очікування_Вводу
+API is Неактивний
+Net is Відключено
+
+@10
+GUI is Обробка_Кліку
+GUI -> API : convert(USD, UAH)
+API is Формування_URL
+
+@15
+API -> Net : HTTP GET Request
+Net is Передача_Даних
+GUI is Заблоковано
+
+@45
+Net -> API : HTTP 200 OK
+Net is Відключено
+API is Парсинг_JSON
+
+@50
+API -> GUI : return результат
+API is Неактивний
+GUI is Оновлення_UI
+
+@55
+GUI is Очікування_Вводу
+@enduml

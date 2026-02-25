@@ -1,0 +1,32 @@
+@startuml
+actor Користувач as U
+participant "LoginDialog" as GUI
+participant "BiometricThread" as Thread
+participant "AuthManager" as Auth
+participant "Windows OS" as OS
+
+U -> GUI: Натискає "FaceID / Відбиток"
+activate GUI
+GUI -> Thread: start()
+activate Thread
+
+Thread -> Auth: verify_biometrics()
+activate Auth
+Auth -> OS: request_verification_async()
+activate OS
+
+OS -> U: Показує системне вікно камери
+U -> OS: Дивиться в камеру
+OS --> Auth: VERIFIED
+deactivate OS
+
+Auth --> Thread: return True
+deactivate Auth
+
+Thread -> GUI: emit result_signal(True)
+deactivate Thread
+
+GUI -> GUI: accept() (Закриття)
+GUI -> U: Відкриває Головне вікно
+deactivate GUI
+@enduml

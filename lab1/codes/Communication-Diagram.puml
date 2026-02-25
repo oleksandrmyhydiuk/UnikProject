@@ -1,0 +1,21 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor "Користувач" as U
+component "GUI: FinanceAppGUI" as GUI
+component "API: APIHandler" as API
+component "Library: requests" as Req
+cloud "ExchangeRate API" as Web
+
+' Прямі виклики (суцільні лінії)
+U --> GUI : "1. Клік 'Конвертувати'"
+GUI --> API : "2. convert_currency()"
+API --> Req : "3. get()"
+Req --> Web : "4. HTTP GET"
+
+' Повернення результатів (пунктирні лінії)
+Web ..> Req : "5. HTTP 200 OK (JSON)"
+Req ..> API : "6. return data"
+API ..> GUI : "7. return 4150.0"
+GUI ..> U : "8. Оновлює QLineEdit"
+@enduml

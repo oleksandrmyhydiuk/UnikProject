@@ -1,0 +1,27 @@
+@startuml
+package "Програма Фінансовий Асистент" {
+  [GUI (PyQt5 Вікна)] as GUI
+  interface "IFinanceOperations" as IFinance
+  interface "IAuth" as IAuth
+  interface "IDatabase" as IDB
+  
+  [Business Logic (FinanceService)] as Logic
+  [Security Module (AuthManager)] as Security
+  [Data Access Layer (DatabaseManager)] as DAL
+  
+  GUI -( IFinance
+  Logic -up- IFinance
+  
+  GUI -( IAuth
+  Security -up- IAuth
+  
+  Logic -( IDB
+  DAL -up- IDB
+}
+
+database "SQLite3 (finance_assistant.db)" as DB
+node "Windows Credential Manager" as Keyring
+
+DAL --> DB : SQLite API
+Security --> Keyring : keyring API
+@enduml

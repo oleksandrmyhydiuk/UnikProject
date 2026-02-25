@@ -1,0 +1,56 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "Models" {
+  class Account {
+    # _balance: float
+    + name: str
+    + add_transaction(t: Transaction, is_income: bool)
+    + get_balance(): float
+  }
+
+  abstract class Transaction {
+    + amount: float
+    + date: str
+    + description: str
+  }
+  
+  class CategorizedTransaction extends Transaction {
+    + category: str
+  }
+
+  class SavingsGoal {
+    + target_amount: float
+    + current_amount: float
+    + add_contribution(amount: float)
+  }
+}
+
+package "Services" {
+  class FinanceService {
+    - current_account: Account
+    - db: DatabaseManager
+    + get_spending_analysis(): dict
+  }
+  class AuthManager {
+    + verify_password(pwd: str): bool
+    + verify_biometrics(): bool
+  }
+}
+
+package "GUI" {
+  class FinanceAppGUI {
+    - service: FinanceService
+    + refresh_views()
+  }
+  class BiometricThread <<QThread>> {
+    + run()
+  }
+}
+
+FinanceAppGUI --> FinanceService
+FinanceAppGUI *-- BiometricThread
+FinanceService o-- Account
+Account "1" *-- "*" Transaction
+Account "1" *-- "*" SavingsGoal
+@enduml
