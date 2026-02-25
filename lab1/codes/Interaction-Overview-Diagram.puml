@@ -28,4 +28,5 @@ partition "Головний цикл додатку" {
 
 :Закриття вікна (sys.exit);
 stop
+
 @enduml
