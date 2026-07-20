@@ -97,7 +97,7 @@ The interface is built using **PyQt5** and `qtawesome` for icons, ensuring a mod
 
 -----
 
-## 📋 Academic Requirements Compliance
+## Academic Requirements Compliance
 
 The project was developed in accordance with specific academic requirements for OOP and architecture.
 
