@@ -4,7 +4,7 @@ This is a full-featured desktop application for personal finance management, dev
 
 The interface is built using **PyQt5** and `qtawesome` for icons, ensuring a modern look and feel. The application supports themes (light/dark) and internationalization (Ukrainian/English) with dynamic switching.
 
-## 🚀 Key Features
+## Key Features
 
   * **Dashboard:** Add income and expenses, view transaction history in a table, and see the current balance.
   * **Currency Converter:** A built-in converter that uses an API to fetch real-time exchange rates.
@@ -15,20 +15,20 @@ The interface is built using **PyQt5** and `qtawesome` for icons, ensuring a mod
   * **Visualization:** Build pie and bar charts to analyze spending.
   * **Settings:** Dynamically switch the language (i18n) and theme (Light/Dark mode) without restarting the application.
 
-## 🛡️ Security & Biometric Updates
+## Security & Biometric Updates
 
-* **🔐 Authentication:**
+* **Authentication:**
     * Password registration and login protected by **Argon2** hashing.
     * **Biometric Login:** Integration with **Windows Hello** (FaceID, Fingerprint, PIN) for quick, password-less access.
-* **🛡️ Security Technologies:**
+* **Security Technologies:**
     * **winsdk:** Used to interface with Windows API for Windows Hello biometric prompts.
     * **argon2-cffi:** Implements state-of-the-art password hashing.
     * **keyring:** Securely stores access tokens in the system's Credential Manager to prevent theft.
     * **asyncio:** Handles asynchronous Windows API calls to ensure a responsive UI during authentication.
-* **🧵 Multithreading:**
+* **Multithreading:**
     * Implemented `QThread` (`BiometricThread`) to run biometric checks in the background, preventing the UI from freezing while waiting for user input.
 
-## 🛠️ Technologies Used
+## Technologies Used
 
   * **Language:** Python 3
   * **Graphical Interface (GUI):** PyQt5
@@ -47,7 +47,7 @@ The interface is built using **PyQt5** and `qtawesome` for icons, ensuring a mod
   * **Logging:** `logging`
   * **Internationalization (i18n):** `json`
 
-## ⚙️ Installation and Launch
+## Installation and Launch
 
 1.  **Clone the repository:**
 
