@@ -85,9 +85,10 @@ class SavingsAccount(Account):
 
     def apply_interest(self):
         interest_amount = self._balance * self._interest_rate
-        interest_transaction = CategorizedTransaction(interest_amount, datetime.now().strftime('%Y-%m-%d'),
-                                                      "Нарахування відсотків", "Дохід")
-        super().add_transaction(interest_transaction, is_income=True)
+        if interest_amount > 0:
+            interest_transaction = CategorizedTransaction(interest_amount, datetime.now().strftime('%Y-%m-%d'),
+                                                          "Нарахування відсотків", "Дохід")
+            super().add_transaction(interest_transaction, is_income=True)
 
 
 # --- Класи бюджету та звітів ---
@@ -95,6 +96,8 @@ class Budget:
     """Клас для створення та відстеження бюджетів за категоріями."""
 
     def __init__(self, category: str, limit: float):
+        if limit < 0:
+            raise ValueError("Ліміт бюджету не може бути від'ємним.")
         self.category = category
         self.limit = float(limit)
 

@@ -99,5 +99,20 @@
   "budget_status_title": "Budget Status",
   "budget_status_message": "Budget for '{category}': {limit:.2f} UAH\nSpent this month: {spent:.2f} UAH",
 
-  "current_balance_label": "Your Current Balance"
+  "current_balance_label": "Your Current Balance",
+
+  "auth_login_title": "System Login",
+  "auth_register_title": "Create Password",
+  "auth_password_label": "Enter password:",
+  "auth_confirm_label": "Confirm password:",
+  "auth_login_button": "Login",
+  "auth_register_button": "Save Password",
+  "auth_biometric_button": "Login via System / FaceID",
+  "auth_biometric_waiting": "Waiting for Windows Hello...",
+  "auth_error_mismatch": "Passwords do not match!",
+  "auth_error_incorrect": "Incorrect password!",
+  "auth_error_empty": "Password cannot be empty!",
+  "auth_success_register": "Password created successfully!",
+  "auth_biometric_success": "Authentication successful!",
+  "auth_biometric_failed": "Failed to authenticate via system."
 }
