@@ -132,7 +132,7 @@ class LoginDialog(BaseAuthDialog):
         self.btn_bio.setEnabled(False)
         self.btn_login.setEnabled(False)
         self.pass_input.setEnabled(False)
-        self.status_label.setText("Очікування Windows Hello...")
+        self.status_label.setText(self.loc.get("auth_biometric_waiting"))
 
         # 2. Створюємо та налаштовуємо потік
         self.bio_thread = BiometricThread(self.auth_manager)

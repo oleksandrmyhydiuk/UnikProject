@@ -76,49 +76,83 @@ class DatabaseManager:
 
     def save_debt(self, debt: Debt) -> int:
         """Зберігає новий борг і повертає його ID."""
-        self.cursor.execute('''
-        INSERT INTO debts (name, amount, due_date, is_loan, is_paid)
-        VALUES (?, ?, ?, ?, ?)''',
-                            (debt.name, debt.amount, debt.due_date, int(debt.is_loan), int(debt.is_paid)))
-        self.conn.commit()
-        return self.cursor.lastrowid
+        try:
+            self.cursor.execute('''
+            INSERT INTO debts (name, amount, due_date, is_loan, is_paid)
+            VALUES (?, ?, ?, ?, ?)''',
+                                (debt.name, debt.amount, debt.due_date, int(debt.is_loan), int(debt.is_paid)))
+            self.conn.commit()
+            return self.cursor.lastrowid
+        except sqlite3.Error as e:
+            logger.error(f"Помилка збереження боргу в БД: {e}")
+            self.conn.rollback()
+            raise
 
     def update_debt(self, debt: Debt):
         """Оновлює існуючий борг."""
-        self.cursor.execute('''
-        UPDATE debts SET name = ?, amount = ?, due_date = ?, is_loan = ?, is_paid = ?
-        WHERE id = ?''',
-                            (debt.name, debt.amount, debt.due_date, int(debt.is_loan), int(debt.is_paid), debt.id))
-        self.conn.commit()
+        try:
+            self.cursor.execute('''
+            UPDATE debts SET name = ?, amount = ?, due_date = ?, is_loan = ?, is_paid = ?
+            WHERE id = ?''',
+                                (debt.name, debt.amount, debt.due_date, int(debt.is_loan), int(debt.is_paid), debt.id))
+            self.conn.commit()
+        except sqlite3.Error as e:
+            logger.error(f"Помилка оновлення боргу в БД: {e}")
+            self.conn.rollback()
+            raise
 
     def load_debts(self) -> list[Debt]:
         """Завантажує всі борги з БД."""
-        self.cursor.execute("SELECT id, name, amount, due_date, is_loan, is_paid FROM debts")
-        rows = self.cursor.fetchall()
-        return [Debt(r[0], r[1], r[2], r[3], bool(r[4]), bool(r[5])) for r in rows]
+        try:
+            self.cursor.execute("SELECT id, name, amount, due_date, is_loan, is_paid FROM debts")
+            rows = self.cursor.fetchall()
+            return [Debt(r[0], r[1], r[2], r[3], bool(r[4]), bool(r[5])) for r in rows]
+        except sqlite3.Error as e:
+            logger.error(f"Помилка завантаження боргів з БД: {e}")
+            return []
 
     def save_goal(self, goal: SavingsGoal) -> int:
         """Зберігає нову ціль і повертає її ID."""
-        self.cursor.execute('''
-        INSERT INTO savings_goals (name, target_amount, current_amount)
-        VALUES (?, ?, ?)''', (goal.name, goal.target_amount, goal.current_amount))
-        self.conn.commit()
-        return self.cursor.lastrowid
+        try:
+            self.cursor.execute('''
+            INSERT INTO savings_goals (name, target_amount, current_amount)
+            VALUES (?, ?, ?)''', (goal.name, goal.target_amount, goal.current_amount))
+            self.conn.commit()
+            return self.cursor.lastrowid
+        except sqlite3.Error as e:
+            logger.error(f"Помилка збереження цілі в БД: {e}")
+            self.conn.rollback()
+            raise
 
     def update_goal(self, goal: SavingsGoal):
         """Оновлює існуючу ціль."""
-        self.cursor.execute('''
-        UPDATE savings_goals SET name = ?, target_amount = ?, current_amount = ?
-        WHERE id = ?''', (goal.name, goal.target_amount, goal.current_amount, goal.id))
-        self.conn.commit()
+        try:
+            self.cursor.execute('''
+            UPDATE savings_goals SET name = ?, target_amount = ?, current_amount = ?
+            WHERE id = ?''', (goal.name, goal.target_amount, goal.current_amount, goal.id))
+            self.conn.commit()
+        except sqlite3.Error as e:
+            logger.error(f"Помилка оновлення цілі в БД: {e}")
+            self.conn.rollback()
+            raise
 
     def load_goals(self) -> list[SavingsGoal]:
         """Завантажує всі цілі з БД."""
-        self.cursor.execute("SELECT id, name, target_amount, current_amount FROM savings_goals")
-        rows = self.cursor.fetchall()
-        return [SavingsGoal(r[0], r[1], r[2], r[3]) for r in rows]
+        try:
+            self.cursor.execute("SELECT id, name, target_amount, current_amount FROM savings_goals")
+            rows = self.cursor.fetchall()
+            return [SavingsGoal(r[0], r[1], r[2], r[3]) for r in rows]
+        except sqlite3.Error as e:
+            logger.error(f"Помилка завантаження цілей з БД: {e}")
+            return []
 
     def close(self):
         if self.conn:
             self.conn.close()
             logger.info("З'єднання з базою даних закрито.")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()

@@ -53,6 +53,7 @@ class ChartDialog(QDialog):
         layout = QVBoxLayout(self)
 
         fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
+        self._fig = fig
 
         is_dark = self._current_theme == 'dark'
 
@@ -89,6 +90,10 @@ class ChartDialog(QDialog):
         canvas = FigureCanvas(fig)
         layout.addWidget(canvas)
         self.setLayout(layout)
+
+    def closeEvent(self, event):
+        plt.close(self._fig)
+        super().closeEvent(event)
 
 
 class ChartSelectionDialog(QDialog):
@@ -696,7 +701,8 @@ class FinanceAppGUI(QMainWindow):
     def _generate_report(self, report_type: type[Report]):
         try:
             report_text, file_path = self._service.generate_report(report_type)
-            QMessageBox.information(self, self._loc.get(f"{report_type.__name__.lower()}"), report_text)
+            title_key = "spending_report" if report_type is SpendingReport else "income_report"
+            QMessageBox.information(self, self._loc.get(title_key), report_text)
             QMessageBox.information(self, self._loc.get("report_generated_success"),
                                     self._loc.get("report_generated_message", path=file_path))
         except Exception as e:
@@ -943,3 +949,8 @@ class FinanceAppGUI(QMainWindow):
             item = QTreeWidgetItem([category, f"{amount:.2f}"])
             item.setForeground(1, color_red)  # Витрати червоним
             self.analysis_tree.addTopLevelItem(item)
+
+    def closeEvent(self, event):
+        """Коректно закриває з'єднання з базою даних при виході з програми."""
+        self._db_manager.close()
+        super().closeEvent(event)

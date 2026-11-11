@@ -4,39 +4,58 @@ import logging
 import platform
 import asyncio  # Потрібно для асинхронних викликів Windows API
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import VerifyMismatchError, InvalidHashError
+
+try:
+    import keyring
+except ImportError:
+    keyring = None
 
 logger = logging.getLogger(__name__)
 
 AUTH_FILE = "auth_config.json"
+SERVICE_NAME = "FinancialAssistant"
+BIOMETRIC_TOKEN_USER = "biometric_auth_token"
 
 
 class AuthManager:
-    def __init__(self):
+    def __init__(self, auth_file: str = AUTH_FILE):
         self.ph = PasswordHasher()
+        self.auth_file = auth_file
 
     def is_registered(self):
         """Перевіряє, чи створено вже пароль."""
-        return os.path.exists(AUTH_FILE)
+        return os.path.exists(self.auth_file)
 
     def register_password(self, password):
         """Хешує пароль і зберігає хеш у файл."""
+        if not password:
+            raise ValueError("Пароль не може бути порожнім.")
         password_hash = self.ph.hash(password)
-        with open(AUTH_FILE, 'w') as f:
-            json.dump({"hash": password_hash}, f)
+        with open(self.auth_file, 'w', encoding='utf-8') as f:
+            json.dump({"hash": password_hash}, f, indent=2)
+        if keyring is not None:
+            try:
+                keyring.set_password(SERVICE_NAME, BIOMETRIC_TOKEN_USER, "enabled")
+            except Exception as e:
+                logger.debug(f"Не вдалося зберегти токен у системному сховищі keyring: {e}")
         logger.info("Пароль зареєстровано успішно.")
 
     def verify_password(self, password):
         """Перевіряє введений пароль через Argon2."""
-        if not self.is_registered():
+        if not password or not self.is_registered():
             return False
         try:
-            with open(AUTH_FILE, 'r') as f:
+            with open(self.auth_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             stored_hash = data.get("hash")
+            if not stored_hash:
+                return False
             self.ph.verify(stored_hash, password)
+            if self.ph.check_needs_rehash(stored_hash):
+                self.register_password(password)
             return True
-        except (VerifyMismatchError, FileNotFoundError, json.JSONDecodeError):
+        except (VerifyMismatchError, InvalidHashError, FileNotFoundError, json.JSONDecodeError):
             return False
 
     def verify_biometrics(self):

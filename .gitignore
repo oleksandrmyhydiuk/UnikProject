@@ -1,0 +1,33 @@
+# Environment variables & secrets
+.env
+auth_config.json
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE & Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing & Benchmarking
+.pytest_cache/
+.benchmarks/
+.coverage
+htmlcov/
+
+# Database & Runtime files
+*.db
+*.sqlite3
+*.log
+income_report_*.txt
+spending_report_*.txt
+reports/

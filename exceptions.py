@@ -12,3 +12,4 @@ class InsufficientFundsError(Exception):
             f"Поточний баланс: {balance:.2f} грн\n"
             f"Спроба списання: {amount:.2f} грн"
         )
+        super().__init__(self.message)

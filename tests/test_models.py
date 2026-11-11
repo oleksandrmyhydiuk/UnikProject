@@ -1,7 +1,7 @@
 import pytest
 from models import (
-    Account, Transaction, CategorizedTransaction, SavingsAccount,
-    SavingsGoal, SpendingReport
+    Account, Transaction, CategorizedTransaction, RecurringTransaction,
+    SavingsAccount, SavingsGoal, SpendingReport, IncomeReport, Budget, Debt, User
 )
 from exceptions import InsufficientFundsError
 
@@ -142,3 +142,41 @@ def test_savings_goal_over_contribution(savings_goal: SavingsGoal):
 
     assert savings_goal.current_amount == 40000.0
     assert savings_goal.get_progress() == 100.0
+
+
+def test_income_report_generation(account_with_transactions: Account):
+    """Перевіряє коректність генерації звіту про доходи."""
+    report = IncomeReport(account_with_transactions)
+    data = report.generate(start_date="2000-01-01", end_date="2099-12-31")
+
+    assert "Зарплата" in data
+    assert data["Зарплата"] == 5000.0
+    assert len(data) == 1
+
+
+def test_savings_account_apply_interest():
+    """Перевіряє нарахування відсотків на ощадному рахунку та роботу при нульовому балансі."""
+    empty_acc = SavingsAccount("Порожній", initial_balance=0.0, interest_rate=0.05)
+    empty_acc.apply_interest()
+    assert empty_acc.get_balance() == 0.0
+
+    acc = SavingsAccount("Депозит", initial_balance=1000.0, interest_rate=0.10)
+    acc.apply_interest()
+    assert acc.get_balance() == 1100.0
+
+
+def test_budget_tracking(account_with_transactions: Account):
+    """Перевіряє розрахунок витрат за категорією в межах бюджету."""
+    budget = Budget("Продукти", 500.0)
+    spent = budget.get_spent_amount(account_with_transactions.transactions)
+    assert spent == 350.0
+
+    with pytest.raises(ValueError):
+        Budget("Продукти", -10.0)
+
+
+def test_insufficient_funds_error_message():
+    """Перевіряє текстове представлення помилки InsufficientFundsError."""
+    err = InsufficientFundsError(balance=50.0, amount=100.0)
+    assert "50.00 грн" in str(err)
+    assert "100.00 грн" in str(err)

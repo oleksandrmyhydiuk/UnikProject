@@ -10,25 +10,28 @@ logger = logging.getLogger(__name__)
 class APIHandler:
     """Клас для взаємодії з API курсів валют."""
 
-    def __init__(self):
+    def __init__(self, api_key: str | None = None):
         # Отримуємо ключ зі змінних оточення
-        api_key = os.getenv("EXCHANGERATE_API_KEY")
-        if not api_key:
-            logger.critical("API ключ (EXCHANGERATE_API_KEY) не знайдено! Перевірте ваш .env файл.")
-            raise ValueError("API ключ не знайдено! Перевірте ваш .env файл.")
-
-        self.base_url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/"
-        logger.info("API Handler успішно ініціалізовано.")
+        self.api_key = api_key if api_key is not None else os.getenv("EXCHANGERATE_API_KEY")
+        if not self.api_key:
+            logger.warning("API ключ (EXCHANGERATE_API_KEY) не знайдено! Перевірте ваш .env файл.")
+            self.base_url = None
+        else:
+            self.base_url = f"https://v6.exchangerate-api.com/v6/{self.api_key}/latest/"
+            logger.info("API Handler успішно ініціалізовано.")
 
     def get_exchange_rate(self, base_currency, target_currency):
         """Отримує обмінний курс між двома валютами."""
+        if not self.base_url:
+            logger.error("Неможливо отримати курс валют: API ключ не налаштовано.")
+            return None
         try:
             url = self.base_url + base_currency
             logger.info(f"Надсилання запиту до API: {url}")
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
             response.raise_for_status()  # Перевірка на HTTP помилки
             data = response.json()
-            if data['result'] == 'success' and target_currency in data['conversion_rates']:
+            if data.get('result') == 'success' and target_currency in data.get('conversion_rates', {}):
                 rate = data['conversion_rates'][target_currency]
                 logger.info(f"Отримано курс: 1 {base_currency} = {rate} {target_currency}")
                 return rate
